@@ -1,0 +1,43 @@
+name: Build FluthVisual
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Unzip project
+        run: |
+          ls -la
+          unzip -o fluthvisual12.zip -d project
+          ls -la project
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Grant execute permission for gradlew
+        working-directory: project
+        run: chmod +x gradlew || true
+
+      - name: Build with Gradle
+        working-directory: project
+        run: ./gradlew build --no-daemon
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FluthVisual
+          path: project/build/libs/*.jar
+          if-no-files-found: error
